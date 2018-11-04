@@ -6,3 +6,7 @@ export const setSearch = (data) => ({
 export const toggleModal = () => ({
   type: 'TOGGLE_MODAL',
 });
+
+export const closeModal = () => ({
+  type: 'CLOSE_MODAL',
+});
