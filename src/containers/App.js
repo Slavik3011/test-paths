@@ -1,23 +1,29 @@
 import React, { Component } from 'react';
 import { Container, Row, Col } from 'reactstrap';
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import Search from './Search';
 import PathList from './PathList';
+import PathPage from './PathPage';
 
 import Header from '../components/Header';
 
 class App extends Component {
   render() {
     return (
-      <Container>
-        <Header />
-        <Row>
-          <Col xs="6">
-            <Search />
-            <PathList />
-          </Col>
-          <Col xs="6">.col-6</Col>
-        </Row>
-      </Container>
+      <Router>
+        <Container>
+          <Header />
+          <Row>
+            <Col md="6">
+              <Search />
+              <PathList />
+            </Col>
+            <Col md="6">
+              <Route path="/:id" component={PathPage} />
+            </Col>
+          </Row>
+        </Container>
+      </Router>
     );
   }
 }
