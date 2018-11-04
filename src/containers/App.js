@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import Search from './Search';
 import PathList from './PathList';
 import PathPage from './PathPage';
+import MyForm from './MyForm';
 
 import Header from '../components/Header';
 
@@ -13,6 +14,7 @@ class App extends Component {
       <Router>
         <Container>
           <Header />
+          <MyForm />
           <Row>
             <Col md="6">
               <Search />
@@ -22,6 +24,7 @@ class App extends Component {
               <Route path="/:id" component={PathPage} />
             </Col>
           </Row>
+
         </Container>
       </Router>
     );
