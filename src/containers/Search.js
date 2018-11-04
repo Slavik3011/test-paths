@@ -1,10 +1,19 @@
 import React from 'react';
 import { Input } from 'reactstrap';
+import { connect } from 'react-redux';
+import { setSearch } from '../actions';
 
-const Search = () => {
+const Search = ({ search, setSearch }) => {
   return (
-    <Input placeholder="Search" />
+    <Input
+      value={search}
+      onChange={e => setSearch(e.target.value)}
+      placeholder="Search"
+    />
   );
 };
 
-export default Search;
+export default connect(
+  ({ search }) => ({search}),
+  { setSearch }
+)(Search);
