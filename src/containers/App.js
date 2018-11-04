@@ -5,8 +5,9 @@ import Search from './Search';
 import PathList from './PathList';
 import PathPage from './PathPage';
 import MyForm from './MyForm';
+import MyModal from '../containers/MyModal';
 
-import Header from '../components/Header';
+import Header from './Header';
 
 class App extends Component {
   render() {
@@ -24,7 +25,7 @@ class App extends Component {
               <Route path="/:id" component={PathPage} />
             </Col>
           </Row>
-
+          <MyModal />
         </Container>
       </Router>
     );
