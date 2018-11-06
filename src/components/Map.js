@@ -8,18 +8,26 @@ class Map extends Component {
     this.mapRef = React.createRef();
   }
 
-  componentDidMount() {
-    const { markers, draggable } = this.props;
+  componentDidUpdate() {
+    const { isAddingMarker } = this.props;
+    const cursor = 'url("https://maps.gstatic.com/mapfiles/openhand_8_8.cur"), default';
+    const elem = this.mapRef.current.firstChild.firstChild.firstChild;
+    if (elem) elem.style.cursor = isAddingMarker ? 'pointer' : cursor;
+  }
+
+  componentDidMount () {
+    const { markers, draggable, currentPosition } = this.props;
+    const center = markers.length ? markers[0] : currentPosition;
     this.map = new window.google.maps.Map(this.mapRef.current, {
-      zoom: 10,
-      center: markers[0]
+      zoom: 14,
+      center
     });
 
     window.google.maps.event.addListener(this.map, 'click', e => {
       this.addMarker(e.latLng.lat(), e.latLng.lng())
     });
 
-    this.directionsService = new window.google.maps.DirectionsService;
+    this.directionsService = new window.google.maps.DirectionsService();
     this.directionsDisplay = new window.google.maps.DirectionsRenderer({
       draggable,
       map: this.map,
@@ -33,6 +41,7 @@ class Map extends Component {
   }
 
   computeTotalDistance = (result) => {
+    const { changeMarker } = this.props;
     const { legs } = result.routes[0];
     const markers = [];
     let length = 0;
@@ -44,11 +53,8 @@ class Map extends Component {
     });
 
     length = length / 1000;
-
-    this.setState({
-      markers,
-      length
-    })
+    
+    if (changeMarker) changeMarker(markers, length)
   };
 
   displayRoute = (origin, destination, waypoints, service, display) => {
@@ -82,15 +88,8 @@ class Map extends Component {
       this.directionsDisplay);
   };
 
-  chooseMarkerPlace = () => {
-    this.mapRef.current.firstChild.firstChild.firstChild.style.cursor = 'pointer';
-    this.setState({
-      isAddingMarker: true
-    })
-  };
-
   addMarker = (lat, lng) => {
-    const { markers, isAddingMarker } = this.state;
+    const { markers, isAddingMarker, addMarker } = this.props;
 
     if (!isAddingMarker) return;
 
@@ -102,16 +101,10 @@ class Map extends Component {
     }
     if (markers.length && this.marker) {
       this.marker.setMap(null);
-      console.log('remove')
       this.marker = false;
     }
-    this.setState({
-      markers: [...markers, {lat, lng}],
-      isAddingMarker: false
-    }, () => {
-      this.buildWay();
-    });
-    this.mapRef.current.firstChild.firstChild.firstChild.style.cursor = 'url("https://maps.gstatic.com/mapfiles/openhand_8_8.cur"), default';
+    addMarker({lat, lng});
+    this.buildWay();
   };
 
   render() {
@@ -126,13 +119,21 @@ class Map extends Component {
 
 Map.defaultProps = {
   height: '400px',
-  draggable: false
+  draggable: false,
+  currentPosition: {lat: 0, lng: 0},
+  isAddingMarker: false,
+  addMarker: null,
+  changeMarker: null
 };
 
 Map.propTypes = {
   height: PropTypes.string,
   markers: PropTypes.array.isRequired,
-  draggable: PropTypes.bool
+  draggable: PropTypes.bool,
+  currentPosition: PropTypes.object,
+  isAddingMarker: PropTypes.bool,
+  addMarker: PropTypes.func,
+  changeMarker: PropTypes.func,
 };
 
 export default Map;

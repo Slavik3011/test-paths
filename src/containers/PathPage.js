@@ -1,22 +1,58 @@
 import React, {Component} from 'react';
+import { connect } from "react-redux";
 import Map from '../components/Map';
-const markers = [{lat: 37.77, lng: -122.447}, {lat: 37.768, lng: -122.311}, {lat: 37.768, lng: -122.511}];
+import { deletePaths, toggleFavorite } from '../actions';
+
 
 class PathPage extends Component {
+  toggleFavorites = (e) => {
+    e.preventDefault();
+    const { paths, match, toggleFavorite } = this.props;
+    const { id } = match.params;
+    const data = paths.find(path => path.id === id);
+    const { favorite } = data;
+    toggleFavorite(id, !favorite)
+  };
+
+  remove = (e) => {
+    e.preventDefault();
+    const { match, history, deletePaths } = this.props;
+    const { id } = match.params;
+    deletePaths(id).then(() => {
+      history.push('/')
+    })
+  };
+
   render() {
+    const { match, paths } = this.props;
+    const data = paths.find(path => path.id === match.params.id);
+    if (!data) return <h2>Loading...</h2>;
+    const { id, title, fullDescription, length, markers, favorite } = data;
     return (
       <div>
         <header>
-          <h2>Title</h2>
-          <p className="distance">1.75 km</p>
+          <h2>{title}</h2>
+          <p className="distance">{length} km</p>
         </header>
-        <p className="description">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus adipisci aliquam architecto asperiores at cumque delectus doloribus ducimus error ex, explicabo fuga illo in incidunt iste iure maxime molestias nulla officiis placeat quod sequi sint sit temporibus tenetur ut vel. Aliquam beatae consequuntur cumque cupiditate deleniti dolores doloribus, eaque, excepturi labore modi nam neque non numquam possimus quisquam quos rem reprehenderit sed similique sit temporibus velit veritatis! Adipisci, assumenda error fugit libero nemo rem repellendus reprehenderit sequi similique veritatis voluptatibus voluptatum. Ab aliquam aut, blanditiis cumque deserunt dicta exercitationem fuga natus pariatur placeat quibusdam recusandae reiciendis, repellendus rerum sapiente sed!
-        </p>
-        <Map markers={markers} />
+        <p className="description">{fullDescription}</p>
+        <Map key={id} markers={markers} />
+        <div className="actions">
+          {
+            favorite ?
+              <a href="#" onClick={this.toggleFavorites}>Remove from favorites</a> :
+              <a href="#" onClick={this.toggleFavorites}>Add to favorites</a>
+          }
+          <a href="#" onClick={this.remove}>Remove</a>
+        </div>
       </div>
     );
   }
 }
 
-export default PathPage;
+export default connect(
+  ({ paths }) => ({ paths: paths.paths }),
+  {
+    deletePaths,
+    toggleFavorite,
+  }
+)(PathPage);

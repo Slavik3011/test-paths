@@ -1,45 +1,53 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import { Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { connect } from 'react-redux';
-import firestore from '../firestoreSettings';
-import { closeModal } from '../actions';
+import { toggleModal, setLength, setMarkers, addPaths } from '../actions';
 
 class MyForm extends Component {
   state = {
     title: '',
     shortDescription: '',
     fullDescription: '',
+    invalid: false
   };
 
   onChangeHandler(key, value) {
     this.setState({
       [key]: value
-    })
+    });
+    if (key === 'shortDescription') {
+      this.setState({
+        invalid: value.length > 160
+      })
+    }
   }
 
   addPath = () => {
     const { title, shortDescription, fullDescription } = this.state;
-    const { closeModal } = this.props;
+    const { toggleModal, length, markers, setLength, setMarkers, addPaths } = this.props;
 
-    firestore.collection("paths").add({
+    addPaths({
       title,
       shortDescription,
       fullDescription,
-      length: 1,
       favorite: false,
-      markers: []
+      length,
+      markers
     })
       .then(() => {
-        closeModal();
+        toggleModal();
+        setLength(0);
+        setMarkers([]);
       })
       .catch((error) => {
+        alert('Error adding document');
         console.error("Error adding document: ", error);
       });
   };
 
   render() {
-    const { title, shortDescription, fullDescription } = this.state;
+    const { title, shortDescription, fullDescription, invalid } = this.state;
+    const { length } = this.props;
     return (
       <Form>
         <FormGroup>
@@ -48,18 +56,29 @@ class MyForm extends Component {
         </FormGroup>
         <FormGroup>
           <Label for="shortDescription">Short description</Label>
-          <Input type="textarea" id="shortDescription" value={shortDescription} onChange={(e) => this.onChangeHandler('shortDescription', e.target.value)} />
+          <Input invalid={invalid} type="textarea" id="shortDescription" value={shortDescription} onChange={(e) => this.onChangeHandler('shortDescription', e.target.value)} />
+          {invalid && <p className="small">Maximum 160 characters</p>}
         </FormGroup>
         <FormGroup>
           <Label for="fullDescription">Full description</Label>
-          <Input type="textarea" id="fullDescription" value={fullDescription} onChange={(e) => this.onChangeHandler('fullDescription', e.target.value)} />
+          <Input style={{height: '150px'}} type="textarea" id="fullDescription" value={fullDescription} onChange={(e) => this.onChangeHandler('fullDescription', e.target.value)} />
         </FormGroup>
-        <Button onClick={this.addPath}>Add path</Button>
+        <h4 className="length">Length {length} km</h4>
+        <Button color="primary" className="add-path" onClick={this.addPath}>Add path</Button>
       </Form>
     );
   }
 }
 
-MyForm.propTypes = {};
-
-export default connect(null, { closeModal })(MyForm);
+export default connect(
+  ({ map }) => ({
+    length: map.length,
+    markers: map.markers
+  }),
+  {
+    toggleModal,
+    setLength,
+    setMarkers,
+    addPaths
+  }
+)(MyForm);

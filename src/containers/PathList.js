@@ -1,69 +1,49 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { connect } from 'react-redux';
+import { getCurrentPosition, getPaths } from '../actions';
+import Card from '../components/Card';
 
 
-const PathList = () => {
-  return (
-    <ul>
-      <li className="card">
-        <Link to="/5">
-          <img src="https://cdn0.iconfinder.com/data/icons/pixon-1/24/arrows_extend_full_screen_fullscreen_maximize_resize_outline-512.png" alt="fullscreen"/>
-          <div>
-            <h3>Path title</h3>
-            <p>desccription</p>
-          </div>
-          <p className="distance">1.75km</p>
-          <span>></span>
-        </Link>
-      </li>
-      <li className="card">
-        <Link to="/5">
-          <img src="https://cdn0.iconfinder.com/data/icons/pixon-1/24/arrows_extend_full_screen_fullscreen_maximize_resize_outline-512.png" alt="fullscreen"/>
-          <div>
-            <h3>Path title</h3>
-            <p>desccription</p>
-          </div>
-          <p className="distance">1.75km</p>
-          <span>></span>
-        </Link>
-      </li>
-      <li className="card">
-        <Link to="/5">
-          <img src="https://cdn0.iconfinder.com/data/icons/pixon-1/24/arrows_extend_full_screen_fullscreen_maximize_resize_outline-512.png" alt="fullscreen"/>
-          <div>
-            <h3>Path title</h3>
-            <p>desccription</p>
-          </div>
-          <p className="distance">1.75km</p>
-          <span>></span>
-        </Link>
-      </li>
-      <li className="card">
-        <Link to="/5">
-          <img src="https://cdn0.iconfinder.com/data/icons/pixon-1/24/arrows_extend_full_screen_fullscreen_maximize_resize_outline-512.png" alt="fullscreen"/>
-          <div>
-            <h3>Path title</h3>
-            <p>desccription</p>
-          </div>
-          <p className="distance">1.75km</p>
-          <span>></span>
-        </Link>
-      </li>
-      <li className="card">
-        <Link to="/5">
-          <img src="https://cdn0.iconfinder.com/data/icons/pixon-1/24/arrows_extend_full_screen_fullscreen_maximize_resize_outline-512.png" alt="fullscreen"/>
-          <div>
-            <h3>Path title</h3>
-            <p>desccription</p>
-          </div>
-          <p className="distance">1.75km</p>
-          <span>></span>
-        </Link>
-      </li>
 
+class PathList extends React.Component {
+  componentDidMount() {
+    const { getCurrentPosition, getPaths } = this.props;
+    getPaths();
+    getCurrentPosition();
+  }
 
-    </ul>
-  );
+  render() {
+    const { paths, search } = this.props;
+    return (
+      <ul>
+        {
+          paths
+            .sort((a, b) => b.favorite)
+            .filter(({ title, shortDescription }) => {
+              const regexp = new RegExp(search, 'i');
+              return regexp.test(title) || regexp.test(shortDescription);
+            })
+            .map(({ id, title, shortDescription, length, favorite }) => <Card
+              key={id}
+              id={id}
+              title={title}
+              shortDescription={shortDescription}
+              length={length}
+              favorite={favorite}
+            />)
+        }
+      </ul>
+    );
+  }
 };
 
-export default PathList;
+export default connect(
+  ({ paths, search }) => ({
+    paths: paths.paths,
+    search
+  }),
+  {
+    getCurrentPosition,
+    getPaths,
+  }
+)(PathList);
